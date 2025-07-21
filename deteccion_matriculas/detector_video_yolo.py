@@ -81,7 +81,10 @@ class DetectorVideoYOLO:
                                 # Difuminar la región de la matrícula
                                 region = frame[y1:y2, x1:x2]
                                 if region.size > 0:
-                                    region_borrosa = cv2.GaussianBlur(region, (23, 23), 30)
+                                    w = x2 - x1
+                                    h = y2 - y1
+                                    ksize = (max(31, w // 3 * 2 | 1), max(31, h // 3 * 2 | 1))  # siempre impar
+                                    region_borrosa = cv2.GaussianBlur(region, ksize, 0)
                                     frame[y1:y2, x1:x2] = region_borrosa
                             else:
                                 # Dibujar rectángulo y etiqueta

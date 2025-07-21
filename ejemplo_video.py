@@ -13,21 +13,21 @@ def ejemplo_basico():
     detector = DetectorVideoYOLO()
     
     # Ejemplo 1: Procesar un video y guardarlo con detecciones
-    video_entrada = "input3.mp4"  # Cambia por tu video
-    video_salida = "video_con_detecciones.mp4"
+    video_entrada = "coche_artibai.mp4"  # Cambia por tu video
+    video_salida = "detecciones_artibai5.mp4"
     
-    if os.path.exists(video_entrada):
-        print("Procesando video con detecciones visibles...")
-        detector.detectar_matriculas_video(
-            video_path=video_entrada,
-            salida_path=video_salida,
-            mostrar_video=True,
-            difuminar=False,  # Mostrar rectángulos, no difuminar
-            confianza=0.5
-        )
+    # if os.path.exists(video_entrada):
+    #     print("Procesando video con detecciones visibles...")
+    #     detector.detectar_matriculas_video(
+    #         video_path=video_entrada,
+    #         salida_path=video_salida,
+    #         mostrar_video=True,
+    #         difuminar=False,  # Mostrar rectángulos, no difuminar
+    #         confianza=0.1
+    #     )
     
     # Ejemplo 2: Procesar un video difuminando las matrículas
-    video_salida_difuminado = "output3.mp4"
+    video_salida_difuminado = "output_artibai.mp4"
     
     if os.path.exists(video_entrada):
         print("Procesando video con matrículas difuminadas...")
@@ -36,7 +36,7 @@ def ejemplo_basico():
             salida_path=video_salida_difuminado,
             mostrar_video=True,
             difuminar=True,  # Difuminar matrículas
-            confianza=0.5
+            confianza=0.1
         )
 
 def ejemplo_webcam():
