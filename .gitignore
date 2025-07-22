@@ -147,7 +147,7 @@ dmypy.json
 .pyre/
 
 # Ignora todo lo que suban los usuarios, excepto los .gitkeep
-static/uploads
+static/uploads/*
 !static/uploads/videos/
 !static/uploads/videos/.gitkeep
 
