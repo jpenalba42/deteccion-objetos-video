@@ -14,7 +14,10 @@ def difuminar_matricula_yolo(imagen_path, salida_path):
         for box in r.boxes:
             x1, y1, x2, y2 = map(int, box.xyxy[0])
             region = imagen[y1:y2, x1:x2]
-            region_borrosa = cv2.GaussianBlur(region, (23, 23), 30)
+            w = x2 - x1
+            h = y2 - y1
+            ksize = (max(31, w // 3 * 2 | 1), max(31, h // 3 * 2 | 1))  # siempre impar
+            region_borrosa = cv2.GaussianBlur(region, ksize, 0)
             imagen[y1:y2, x1:x2] = region_borrosa
             hay_placa = True
 

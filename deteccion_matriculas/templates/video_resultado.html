@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Resultado Video</title>
+  </head>
+  <body>
+    <h1>Video Procesado</h1>
+    <video width="640" height="480" controls>
+      <source src="{{ video_url }}" type="video/mp4" />
+      Tu navegador no soporta la reproducción de video.
+    </video>
+    <br /><br />
+    <div style="margin-top: 30px">
+      <a href="{{ url_for('procesar_video') }}">
+        <button
+          style="
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 10px;
+          "
+        >
+          Volver
+        </button>
+      </a>
+
+      <a
+        href="{{ url_for('static', filename='procesadas/videos/' + nombre_archivo) }}"
+        download
+      >
+        <button
+          style="
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+          "
+        >
+          Descargar video
+        </button>
+      </a>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Resultado</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 40px;
+      }
+      .imagen-container {
+        display: grid;
+        gap: 40px;
+        margin-top: 20px;
+      }
+      .imagen-container img {
+        max-width: 45%;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+      }
+      .botones-container {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+      }
+      .botones-container button {
+        padding: 10px 16px;
+        border: none;
+        background-color: #4caf50;
+        color: white;
+        font-size: 15px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .botones-container button:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Resultado</h1>
+
+    <div class="imagen-container">
+      <div>
+        <h3>Foto original</h3>
+        <img
+          src="{{ url_for('static', filename='uploads/' + imagen_original) }}"
+          alt="Imagen original"
+        />
+      </div>
+      <div>
+        <h3>Foto final</h3>
+        <img
+          src="{{ url_for('mostrar_imagen', nombre=imagen_procesada) }}"
+          alt="Imagen procesada"
+        />
+      </div>
+    </div>
+    <div class="botones-container">
+      <a href="/">
+        <button>⬅ Volver</button>
+      </a>
+      <a
+        href="{{ url_for('mostrar_imagen', nombre=imagen_procesada) }}"
+        download="{{ imagen_procesada }}"
+      >
+        <button>⬇ Descargar imagen final</button>
+      </a>
+    </div>
+  </body>
+</html>

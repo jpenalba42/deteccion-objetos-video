@@ -4,6 +4,24 @@ import os
 import argparse
 import numpy as np
 from pathlib import Path
+import subprocess
+
+def convertir_a_h264(video_entrada, video_salida):
+    """
+    Convierte un video a formato MP4 compatible con navegadores (H.264 + AAC)
+    usando FFmpeg.
+    """
+    comando = [
+        'ffmpeg',
+        '-y',                      # Sobrescribe si ya existe
+        '-i', video_entrada,       # Video de entrada
+        '-vcodec', 'libx264',      # Video codec H.264
+        '-acodec', 'aac',          # Audio codec AAC
+        '-strict', 'experimental', # Permite usar AAC
+        video_salida
+    ]
+    subprocess.run(comando, check=True)
+
 
 class DetectorVideoYOLO:
     def __init__(self, modelo_path=None):
@@ -14,7 +32,7 @@ class DetectorVideoYOLO:
             modelo_path (str): Ruta al modelo YOLO. Si es None, usa el modelo por defecto.
         """
         if modelo_path is None:
-            modelo_path = os.path.join("deteccion_matriculas","modelos", "license-plate-finetune-v1l.pt")
+            modelo_path = os.path.join("modelos", "license-plate-finetune-v1l.pt")
         
         if not os.path.exists(modelo_path):
             raise FileNotFoundError(f"No se encontró el modelo en: {modelo_path}")
@@ -126,6 +144,16 @@ class DetectorVideoYOLO:
             if mostrar_video:
                 cv2.destroyAllWindows()
         
+        # Convertir video a formato compatible con navegador
+        if salida_path:
+            salida_h264 = salida_path.replace(".mp4", "_h264.mp4")
+            convertir_a_h264(salida_path, salida_h264)
+
+            # Reemplazar el original por el compatible
+            os.remove(salida_path)
+            os.rename(salida_h264, salida_path)
+            print(f"- Video recodificado a H.264 compatible para navegador.")
+
         print(f"Procesamiento completado:")
         print(f"- Frames procesados: {frame_count}")
         print(f"- Matrículas detectadas: {detecciones_totales}")

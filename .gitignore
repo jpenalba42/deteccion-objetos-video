@@ -145,3 +145,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Ignora todo lo que suban los usuarios, excepto los .gitkeep
+static/uploads
+!static/uploads/videos/
+!static/uploads/videos/.gitkeep
+
+static/procesadas/*
+!static/procesadas/videos/
+!static/procesadas/videos/.gitkeep

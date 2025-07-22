@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Difuminador de Matrículas</title>
+  </head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 400px;
+    }
+
+    input[type="file"] {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #aaa;
+      background-color: #f9f9f9;
+      cursor: pointer;
+    }
+
+    button {
+      padding: 10px 16px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      font-size: 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+  <body>
+    <h1>Difuminado de matrículas</h1>
+    <form method="POST" action="/procesar" enctype="multipart/form-data">
+      <div>
+        <label for="metodo">Método de detección:</label>
+        <select name="metodo" id="metodo">
+          <option value="haar" selected>Básico (rápido)</option>
+          <option value="yolo">Avanzado (YOLO)</option>
+        </select>
+      </div>
+      <label for="imagen">Sube una imagen: </label>
+      <input type="file" name="imagen" accept="image/*" required />
+      <button type="submit">Procesar</button>
+    </form>
+  </body>
+</html>

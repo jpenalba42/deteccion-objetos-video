@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Detección de Matrículas</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='estilos.css') }}"
+    />
+  </head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .options {
+      display: flex;
+      gap: 20px;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 12px 20px;
+      margin: 10px;
+      background-color: #3d85c6;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 18px;
+    }
+
+    .button:hover {
+      background-color: #2a5d84;
+    }
+  </style>
+  <body>
+    <div class="container">
+      <h1>Proyecto: Detección y Difuminado de Matrículas</h1>
+      <div class="options">
+        <a href="{{ url_for('procesar_imagen') }}" class="button"
+          >Procesar Imagen</a
+        >
+        <a href="{{ url_for('procesar_video') }}" class="button"
+          >Procesar Video</a
+        >
+      </div>
+    </div>
+  </body>
+</html>

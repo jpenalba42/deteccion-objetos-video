@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Procesar Video</title>
+  </head>
+  <body>
+    <h1>Procesar Video de Matrículas</h1>
+    <form
+      action="{{ url_for('procesar_video_post') }}"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      <label for="video">Seleccionar archivo de video:</label><br />
+      <input type="file" name="video" accept="video/mp4" required /><br /><br />
+
+      <label>
+        <input type="checkbox" name="difuminar" />
+        Difuminar matrículas detectadas </label
+      ><br /><br />
+
+      <button type="submit">Procesar</button>
+      <a href="{{ url_for('index') }}">Volver al inicio</a>
+    </form>
+  </body>
+</html>
