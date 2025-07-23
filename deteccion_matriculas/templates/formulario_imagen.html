@@ -1,61 +1,143 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
   <head>
-    <title>Difuminador de Matrículas</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procesar Imagen - Detección de Matrículas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+      body { 
+        padding: 20px; 
+        background-color: #f8f9fa; 
+      }
+      .upload-container { 
+        max-width: 600px; 
+        margin: 50px auto; 
+        padding: 30px; 
+        background: white; 
+        border-radius: 10px; 
+        box-shadow: 0 0 20px rgba(0,0,0,0.1); 
+      }
+      .page-title {
+        color: #0d6efd;
+        margin-bottom: 30px;
+        font-weight: 600;
+        text-align: center;
+      }
+      .preview-container {
+        margin: 20px 0;
+        text-align: center;
+        display: none;
+      }
+      #image-preview {
+        max-width: 100%;
+        max-height: 400px;
+        border-radius: 5px;
+        margin-top: 15px;
+        border: 1px solid #dee2e6;
+      }
+      .form-label {
+        font-weight: 500;
+      }
+      .btn-submit {
+        padding: 10px 25px;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+      }
+      .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      }
+      .method-info {
+        background-color: #f8f9fa;
+        border-left: 4px solid #0d6efd;
+        padding: 10px 15px;
+        margin: 15px 0;
+        border-radius: 0 4px 4px 0;
+        font-size: 0.9rem;
+      }
+    </style>
   </head>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 40px;
-    }
-
-    h1 {
-      font-size: 28px;
-      margin-bottom: 20px;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      max-width: 400px;
-    }
-
-    input[type="file"] {
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #aaa;
-      background-color: #f9f9f9;
-      cursor: pointer;
-    }
-
-    button {
-      padding: 10px 16px;
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      font-size: 15px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #45a049;
-    }
-  </style>
   <body>
-    <h1>Difuminado de matrículas</h1>
-    <form method="POST" action="/procesar" enctype="multipart/form-data">
-      <div>
-        <label for="metodo">Método de detección:</label>
-        <select name="metodo" id="metodo">
-          <option value="haar" selected>Básico (rápido)</option>
-          <option value="yolo">Avanzado (YOLO)</option>
-        </select>
+    <div class="container">
+      <div class="upload-container">
+        <h1 class="page-title">
+          <i class="bi bi-card-image"></i> Procesar Imagen
+        </h1>
+        
+        <form method="POST" action="{{ url_for('procesar') }}" enctype="multipart/form-data" id="uploadForm">
+          <div class="mb-4">
+            <label for="metodo" class="form-label">Método de detección:</label>
+            <select name="metodo" id="metodo" class="form-select">
+              <option value="yolo" selected>Avanzado (YOLO) - Mayor precisión</option>
+              <option value="haar">Básico (Haar Cascade) - Más rápido</option>
+            </select>
+            <div class="method-info" id="methodInfo">
+              <i class="bi bi-info-circle-fill text-primary"></i> 
+              <span>El método YOLO ofrece mayor precisión en la detección de matrículas.</span>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <label for="imagen" class="form-label">Seleccionar imagen:</label>
+            <input type="file" name="imagen" id="imagen" class="form-control" accept="image/*" required 
+                   onchange="previewImage(event)">
+          </div>
+          
+          <div class="preview-container" id="previewContainer">
+            <label class="form-label">Vista previa:</label>
+            <img id="image-preview" class="img-fluid" />
+          </div>
+          
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <a href="{{ url_for('index') }}" class="btn btn-secondary me-md-2">
+              <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <button type="submit" class="btn btn-primary btn-submit">
+              <i class="bi bi-gear"></i> Procesar Imagen
+            </button>
+          </div>
+        </form>
       </div>
-      <label for="imagen">Sube una imagen: </label>
-      <input type="file" name="imagen" accept="image/*" required />
-      <button type="submit">Procesar</button>
-    </form>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Mostrar vista previa de la imagen seleccionada
+      function previewImage(event) {
+        const input = event.target;
+        const previewContainer = document.getElementById('previewContainer');
+        const preview = document.getElementById('image-preview');
+        
+        if (input.files && input.files[0]) {
+          const reader = new FileReader();
+          
+          reader.onload = function(e) {
+            preview.src = e.target.result;
+            previewContainer.style.display = 'block';
+          }
+          
+          reader.readAsDataURL(input.files[0]);
+        }
+      }
+      
+      // Cambiar información según el método seleccionado
+      document.getElementById('metodo').addEventListener('change', function() {
+        const methodInfo = document.getElementById('methodInfo');
+        if (this.value === 'yolo') {
+          methodInfo.innerHTML = '<i class="bi bi-info-circle-fill text-primary"></i> El método YOLO ofrece mayor precisión en la detección de matrículas.';
+        } else {
+          methodInfo.innerHTML = '<i class="bi bi-info-circle-fill text-primary"></i> El método básico es más rápido pero puede ser menos preciso.';
+        }
+      });
+      
+      // Mostrar indicador de carga al enviar el formulario
+      document.getElementById('uploadForm').addEventListener('submit', function() {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
+      });
+    </script>
   </body>
 </html>
