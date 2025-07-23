@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procesando Video - Detección de Matrículas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.0.0/dist/socket.io.min.js"></script>
+    <style>
+        body { padding: 20px; background-color: #f8f9fa; }
+        .progress-container { max-width: 800px; margin: 50px auto; padding: 30px; background: white; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        .progress { height: 30px; margin: 20px 0; }
+        .progress-bar { transition: width 0.3s ease; }
+        .status-message { margin: 20px 0; padding: 15px; border-radius: 5px; background-color: #f8f9fa; border-left: 4px solid #0d6efd; }
+        .video-info { background-color: #e9ecef; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .result-container { display: none; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="progress-container">
+            <h2 class="text-center mb-4">Procesando Video</h2>
+            
+            <div class="video-info">
+                <div id="video-details">
+                    <p><strong>Resolución:</strong> <span id="resolution">-</span></p>
+                    <p><strong>FPS:</strong> <span id="fps">-</span></p>
+                    <p><strong>Total de frames:</strong> <span id="total-frames">-</span></p>
+                </div>
+            </div>
+            
+            <div class="status-message" id="status-message">
+                Iniciando procesamiento del video...
+            </div>
+            
+            <div class="progress">
+                <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                     role="progressbar" style="width: 0%" 
+                     aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+            </div>
+            
+            <div class="text-center mt-3" id="frame-counter">
+                Frame: <span id="current-frame">0</span> / <span id="total-frames-counter">0</span>
+            </div>
+            
+            <div class="result-container" id="result-container">
+                <hr>
+                <h4 class="text-center mb-3">¡Procesamiento completado!</h4>
+                <div class="d-grid gap-2">
+                    <a href="/" class="btn btn-primary">Volver al inicio</a>
+                    <a href="#" id="download-btn" class="btn btn-success">
+                        <i class="bi bi-download"></i> Descargar video procesado
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Conectar al servidor WebSocket
+        const socket = io();
+        let videoUrl = '';
+        
+        // Escuchar actualizaciones de progreso
+        socket.on('progress_update', function(data) {
+            // Actualizar información del video
+            if (data.width && data.height) {
+                document.getElementById('resolution').textContent = `${data.width}x${data.height}`;
+                document.getElementById('fps').textContent = data.fps;
+                document.getElementById('total-frames').textContent = data.total_frames;
+                document.getElementById('total-frames-counter').textContent = data.total_frames;
+            }
+            
+            // Actualizar barra de progreso
+            if (data.progress !== undefined) {
+                const progress = Math.round(data.progress);
+                const progressBar = document.getElementById('progress-bar');
+                progressBar.style.width = `${progress}%`;
+                progressBar.setAttribute('aria-valuenow', progress);
+                progressBar.textContent = `${progress}%`;
+                
+                // Actualizar contador de frames
+                if (data.current_frame) {
+                    document.getElementById('current-frame').textContent = data.current_frame;
+                }
+            }
+            
+            // Actualizar mensaje de estado
+            if (data.message) {
+                document.getElementById('status-message').textContent = data.message;
+            }
+            
+            // Manejar estado de recodificación
+            if (data.status === 'recodificando') {
+                document.getElementById('status-message').innerHTML = 
+                    '<i class="bi bi-gear"></i> Recodificando video a formato compatible...';
+            }
+        });
+        
+        // Cuando el video esté listo, redirigir a la página de resultados
+        socket.on('video_ready', function(data) {
+            // Mostrar mensaje de éxito brevemente
+            document.getElementById('progress-bar').classList.remove('progress-bar-animated');
+            document.getElementById('progress-bar').classList.add('bg-success');
+            document.getElementById('status-message').innerHTML = 
+                '<i class="bi bi-check-circle"></i> ¡Procesamiento completado! Redirigiendo...';
+            
+            // Redirigir a la página de resultados después de un breve retraso
+            setTimeout(function() {
+                window.location.href = `/video_resultado?video_url=${encodeURIComponent(data.video_url)}&nombre_archivo=${encodeURIComponent(data.nombre_archivo)}`;
+            }, 1500);
+        });
+        
+        // Manejar errores
+        socket.on('error', function(error) {
+            document.getElementById('status-message').innerHTML = 
+                `<div class="alert alert-danger">Error: ${error.message || 'Error desconocido'}</div>`;
+            document.getElementById('progress-bar').classList.remove('bg-success', 'progress-bar-animated');
+            document.getElementById('progress-bar').classList.add('bg-danger');
+        });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+</body>
+</html>

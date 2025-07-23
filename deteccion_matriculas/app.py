@@ -1,11 +1,18 @@
-from flask import Flask, request, render_template, url_for, send_from_directory
+from flask import Flask, request, render_template, url_for, send_from_directory, jsonify
 import os
 import uuid
+import json
+from flask_socketio import SocketIO, emit
 from detector import difuminar_matricula
 from detector_yolo import difuminar_matricula_yolo
 from detector_video_yolo import DetectorVideoYOLO
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret!'
+app.config['SERVER_NAME'] = 'localhost:5000'  # Asegúrate de que coincida con tu configuración
+app.config['APPLICATION_ROOT'] = '/'
+app.config['PREFERRED_URL_SCHEME'] = 'http'
+socketio = SocketIO(app, cors_allowed_origins="*")
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
 OUTPUT_FOLDER = 'procesadas'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -57,6 +64,18 @@ def imagen_original(nombre):
 def procesar_video():
     return render_template('video.html')
 
+@app.route('/video_resultado')
+def mostrar_video_resultado():
+    video_url = request.args.get('video_url')
+    nombre_archivo = request.args.get('nombre_archivo')
+    
+    if not video_url or not nombre_archivo:
+        return "Parámetros inválidos", 400
+        
+    return render_template("video_resultado.html", 
+                         video_url=video_url, 
+                         nombre_archivo=nombre_archivo)
+
 @app.route('/procesar_video', methods=['POST'])
 def procesar_video_post():
     video = request.files['video']
@@ -70,15 +89,44 @@ def procesar_video_post():
     path_entrada = os.path.join(VIDEO_UPLOAD_FOLDER, nombre_video)
     video.save(path_entrada)
 
-    # Procesar video
-    detector = DetectorVideoYOLO()
-    nombre_salida = f"procesado_{nombre_video}"
-    path_salida = os.path.join(VIDEO_OUTPUT_FOLDER, nombre_salida)
-    detector.detectar_matriculas_video(path_entrada, salida_path=path_salida, difuminar=difuminar, mostrar_video=False)
-
-    return render_template("video_resultado.html",
-                           video_url=url_for('static', filename=f'procesadas/videos/{nombre_salida}'),
-                           nombre_archivo=nombre_salida)
+    # Iniciar procesamiento en segundo plano
+    from threading import Thread
+    
+    def process_video():
+        # Crear el nombre del archivo de salida antes de entrar al contexto de la aplicación
+        nombre_salida = f"procesado_{nombre_video}"
+        path_salida = os.path.join(VIDEO_OUTPUT_FOLDER, nombre_salida)
+        
+        # Función de callback para el progreso
+        def progress_callback(progress_data):
+            socketio.emit('progress_update', progress_data)
+        
+        # Procesar el video
+        detector = DetectorVideoYOLO()
+        detector.detectar_matriculas_video(
+            path_entrada, 
+            salida_path=path_salida, 
+            difuminar=difuminar, 
+            mostrar_video=False,
+            progress_callback=progress_callback
+        )
+        
+        # Notificar que el video está listo
+        # Usar with app.app_context() para generar la URL correctamente
+        with app.app_context():
+            # Usamos una ruta relativa directa en lugar de url_for para evitar problemas de contexto
+            video_url = f"procesadas/videos/{nombre_salida}"
+            socketio.emit('video_ready', {
+                'video_url': video_url,
+                'nombre_archivo': nombre_salida
+            })
+    
+    # Iniciar el procesamiento en un hilo separado
+    thread = Thread(target=process_video)
+    thread.start()
+    
+    # Devolver la plantilla con el ID de sesión
+    return render_template("video_procesando.html")
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app, debug=True)

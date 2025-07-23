@@ -41,7 +41,7 @@ class DetectorVideoYOLO:
         print(f"Modelo cargado desde: {modelo_path}")
     
     def detectar_matriculas_video(self, video_path, salida_path=None, mostrar_video=True, 
-                                 difuminar=False, confianza=0.5):
+                                 difuminar=False, confianza=0.5, progress_callback=None):
         """
         Detecta matrículas en un video
         
@@ -51,6 +51,7 @@ class DetectorVideoYOLO:
             mostrar_video (bool): Si mostrar el video en tiempo real
             difuminar (bool): Si difuminar las matrículas detectadas
             confianza (float): Umbral de confianza para las detecciones
+            progress_callback (callable): Función de callback para actualizar el progreso
         """
         # Abrir video
         cap = cv2.VideoCapture(video_path)
@@ -64,6 +65,25 @@ class DetectorVideoYOLO:
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         
         print(f"Video: {width}x{height}, {fps} FPS, {total_frames} frames")
+        
+        # Información del video para el progreso
+        video_info = {
+            'width': width,
+            'height': height,
+            'fps': fps,
+            'total_frames': total_frames,
+            'current_frame': 0,
+            'progress': 0.0,
+            'status': 'procesando'
+        }
+        
+        # Enviar información inicial del video
+        if progress_callback:
+            progress_callback({
+                **video_info,
+                'message': f'Video: {width}x{height}, {fps} FPS, {total_frames} frames',
+                'status': 'iniciando'
+            })
         
         # Configurar escritor de video si se especifica salida
         out = None
@@ -81,6 +101,17 @@ class DetectorVideoYOLO:
                     break
                 
                 frame_count += 1
+                
+                # Actualizar progreso cada 10 frames o en el último frame
+                if frame_count % 10 == 0 or frame_count == total_frames:
+                    progress = (frame_count / total_frames) * 100
+                    if progress_callback:
+                        progress_callback({
+                            **video_info,
+                            'current_frame': frame_count,
+                            'progress': progress,
+                            'message': f'Procesando: {progress:.1f}% - Frame {frame_count}/{total_frames}'
+                        })
                 
                 # Realizar detección
                 resultados = self.modelo(frame, conf=confianza, verbose=False)
@@ -139,20 +170,38 @@ class DetectorVideoYOLO:
         finally:
             # Limpiar recursos
             cap.release()
+            if progress_callback and salida_path:
+                progress_callback({
+                    **video_info,
+                    'status': 'recodificando',
+                    'message': 'Recodificando video a formato compatible...'
+                })
+        
+            # Liberar recursos
+            cap.release()
             if out:
                 out.release()
-            if mostrar_video:
-                cv2.destroyAllWindows()
         
-        # Convertir video a formato compatible con navegador
-        if salida_path:
-            salida_h264 = salida_path.replace(".mp4", "_h264.mp4")
-            convertir_a_h264(salida_path, salida_h264)
-
-            # Reemplazar el original por el compatible
-            os.remove(salida_path)
-            os.rename(salida_h264, salida_path)
-            print(f"- Video recodificado a H.264 compatible para navegador.")
+            # Si se especificó salida, convertir a formato compatible
+            if salida_path and os.path.exists(salida_path):
+                temp_path = salida_path.replace('.mp4', '_temp.mp4')
+                os.rename(salida_path, temp_path)
+                convertir_a_h264(temp_path, salida_path)
+                os.remove(temp_path)
+        
+            print(f"Procesamiento completado. Total de matrículas detectadas: {detecciones_totales}")
+        
+            # Notificar finalización
+            if progress_callback:
+                progress_callback({
+                    **video_info,
+                    'current_frame': total_frames,
+                    'progress': 100.0,
+                    'status': 'completado',
+                    'message': f'Procesamiento completado. {detecciones_totales} matrículas detectadas.'
+                })
+            
+            return detecciones_totales > 0
 
         print(f"Procesamiento completado:")
         print(f"- Frames procesados: {frame_count}")
