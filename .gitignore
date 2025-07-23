@@ -147,10 +147,21 @@ dmypy.json
 .pyre/
 
 # Ignora todo lo que suban los usuarios, excepto los .gitkeep
-static/uploads/*
-!static/uploads/videos/
-!static/uploads/videos/.gitkeep
+deteccion_matriculas/static/uploads/*
+!deteccion_matriculas/static/uploads/videos/
+deteccion_matriculas/static/uploads/videos/*
+!deteccion_matriculas/static/uploads/videos/.gitkeep
 
-static/procesadas/*
-!static/procesadas/videos/
-!static/procesadas/videos/.gitkeep
+deteccion_matriculas/static/procesadas/*
+!deteccion_matriculas/static/procesadas/videos/
+deteccion_matriculas/static/procesadas/videos/*
+!deteccion_matriculas/static/procesadas/videos/.gitkeep
+
+# Ignorar todo dentro de 'procesadas'
+deteccion_matriculas/procesadas/*
+
+# No ignorar la carpeta 'videos' en su interior
+!deteccion_matriculas/procesadas/videos/
+
+# Pero ignorar todos los archivos dentro de 'videos'
+deteccion_matriculas/procesadas/videos/*
